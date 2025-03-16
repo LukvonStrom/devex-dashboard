@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # MongoDB database service
+  mongodb:
+    image: mongo:latest
+    container_name: devex-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      # You may want to change these in production
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - devex-network
+
+  # DevEx Dashboard application
+  mock-devex-app:
+    build:
+      context: .
+      dockerfile: MOCK_DATA.Dockerfile
+    container_name: devex-app
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    environment:
+      - MONGO_URI=mongodb://admin:password@mongodb:27017/github_metrics?authSource=admin
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-demo_token}
+      - JIRA_URL=${JIRA_URL:-https://example.atlassian.net}
+      - JIRA_USERNAME=${JIRA_USERNAME:-demo_user}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN:-demo_token}
+    # volumes:
+    #   - ./:/app
+    #   # Exclude large directories from volume mounting to improve performance
+    #   - /app/venv
+    #   - /app/__pycache__
+    #   - /app/.git
+    restart: unless-stopped
+    networks:
+      - devex-network
+volumes:
+  mongodb_data:
+
+networks:
+  devex-network:
+    driver: bridge
