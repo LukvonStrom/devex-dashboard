@@ -154,7 +154,7 @@ docker-compose -f docker-compose.yml -f docker-compose.mock.yml up -d
 │   ├── 2_📊_Issue_Metrics.py
 │   ├── 3_📝_Commit_Metrics.py
 │   ├── 4_👥_Team_Insights.py
-│   ├── 6_\23241_Runner_Performance.py
+│   ├── 6_⚡_Runner_Performance
 │   └── 9_🔍_Analytics.py
 ├── requirements.txt
 └── utils
